@@ -6,13 +6,10 @@ from schema import Schema, SchemaError, Const, Or, Optional as SchemaOptional, A
 
 from algorithms.ai.priority_algorithm.priority.interfaces import Priority
 from algorithms.ai.priority_algorithm.priority.priority import (
-    TokenizationPriority,
     get_priority_from_type,
 )
 from algorithms.dataclasses.enums import (
     RelationshipBehaviour,
-    DiversifyType,
-    TokenizationConstraintDirection,
     AlgorithmType,
     PriorityType,
 )
@@ -163,16 +160,7 @@ class PriorityAlgorithmOptions(WeightAlgorithmOptions):
         max_project_preferences = json.get("max_project_preferences")
 
         return PriorityAlgorithmOptions(
-            priorities=[
-                TokenizationPriority(
-                    attribute_id=p.get("attribute_id"),
-                    strategy=DiversifyType(p.get("strategy")),
-                    direction=TokenizationConstraintDirection(p.get("direction")),
-                    threshold=p.get("threshold"),
-                    value=p.get("value"),
-                )
-                for p in priorities
-            ],
+            priorities=[PriorityAlgorithmOptions.parse_priority(p) for p in priorities],
             requirement_weight=requirement_weight,
             social_weight=social_weight,
             diversity_weight=diversity_weight,
@@ -183,6 +171,16 @@ class PriorityAlgorithmOptions(WeightAlgorithmOptions):
             attributes_to_concentrate=attributes_to_concentrate,
             max_project_preferences=max_project_preferences,
         )
+
+    @staticmethod
+    def parse_priority(priority_data: Dict[str, Any]) -> Priority:
+        # parse_json can be called without the API validator (e.g. from runs/cli.py)
+        if "priority_type" not in priority_data:
+            raise ValueError("Priority type not specified.")
+        priority_cls = get_priority_from_type(
+            PriorityType(priority_data["priority_type"])
+        )
+        return priority_cls.parse_json(priority_data)
 
     @staticmethod
     def get_schema() -> Schema:

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from schema import And, Or, Schema
 
@@ -136,6 +136,16 @@ class TokenizationPriority(Priority):
             }
         )
 
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "TokenizationPriority":
+        return TokenizationPriority(
+            attribute_id=json.get("attribute_id"),
+            strategy=DiversifyType(json.get("strategy")),
+            direction=TokenizationConstraintDirection(json.get("direction")),
+            threshold=json.get("threshold"),
+            value=json.get("value"),
+        )
+
 
 @dataclass
 class DiversityPriority(Priority):
@@ -193,6 +203,14 @@ class DiversityPriority(Priority):
             }
         )
 
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "DiversityPriority":
+        return DiversityPriority(
+            attribute_id=json.get("attribute_id"),
+            strategy=DiversifyType(json.get("strategy")),
+            max_num_choices=json.get("max_num_choices"),
+        )
+
 
 @dataclass
 class RequirementPriority(Priority):
@@ -220,6 +238,11 @@ class RequirementPriority(Priority):
                 ),
             }
         )
+
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "RequirementPriority":
+        # criteria is accepted by the schema but has no field on this class, so it is ignored
+        return RequirementPriority()
 
 
 @dataclass
@@ -253,6 +276,13 @@ class ProjectPreferencePriority(Priority):
                 ),
                 "max_project_preferences": int,
             }
+        )
+
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "ProjectPreferencePriority":
+        return ProjectPreferencePriority(
+            direction=PreferenceDirection(json.get("direction")),
+            max_project_preferences=json.get("max_project_preferences"),
         )
 
 
@@ -296,6 +326,13 @@ class SocialPreferencePriority(Priority):
                 "max_num_friends": int,
                 "max_num_enemies": int,
             }
+        )
+
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "SocialPreferencePriority":
+        return SocialPreferencePriority(
+            max_num_friends=json.get("max_num_friends"),
+            max_num_enemies=json.get("max_num_enemies"),
         )
 
 
