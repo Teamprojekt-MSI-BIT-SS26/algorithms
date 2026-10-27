@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from schema import And, Or, Schema
+from schema import And, Or, Schema, Optional as SchemaOptional
 
 from algorithms.ai.priority_algorithm.priority.interfaces import Priority
 from algorithms.ai.priority_algorithm.priority.utils import (
@@ -194,12 +194,21 @@ class DiversityPriority(Priority):
     @staticmethod
     def get_schema() -> Schema:
         return Schema(
-            {
-                "attribute_id": int,
-                "strategy": And(
-                    str, Or(*[strategy.value for strategy in DiversifyType])
+            And(
+                {
+                    "attribute_id": int,
+                    "strategy": And(
+                        str, Or(*[strategy.value for strategy in DiversifyType])
+                    ),
+                    SchemaOptional("max_num_choices"): And(int, lambda n: n > 0),
+                },
+                # mirrors validate(), so a missing value is rejected by the API validator
+                Schema(
+                    lambda data: data["strategy"] != DiversifyType.CONCENTRATE.value
+                    or "max_num_choices" in data,
+                    error="max_num_choices must be specified with strategy == concentrate.",
                 ),
-            }
+            )
         )
 
     @staticmethod
