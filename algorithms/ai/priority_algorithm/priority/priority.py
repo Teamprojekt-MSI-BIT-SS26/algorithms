@@ -13,7 +13,6 @@ from algorithms.ai.weight_algorithm.utility.diversity_utility import _blau_index
 from algorithms.dataclasses.enums import (
     DiversifyType,
     TokenizationConstraintDirection,
-    RequirementsCriteria,
     PriorityType,
     Relationship,
     PreferenceDirection,
@@ -231,17 +230,11 @@ class RequirementPriority(Priority):
 
     @staticmethod
     def get_schema() -> Schema:
-        return Schema(
-            {
-                "criteria": And(
-                    str, Or(*[criteria.value for criteria in RequirementsCriteria])
-                ),
-            }
-        )
+        # the criteria is set per requirement on the project, not on the priority
+        return Schema({})
 
     @staticmethod
     def parse_json(json: Dict[str, Any]) -> "RequirementPriority":
-        # criteria is accepted by the schema but has no field on this class, so it is ignored
         return RequirementPriority()
 
 

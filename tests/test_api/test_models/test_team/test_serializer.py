@@ -63,10 +63,10 @@ class TestTeamSerializer(unittest.TestCase):
         ]
 
         json_students_team_1 = '[{"id": 4, "name": "Teresa", "attributes": {"7": [2]}, "relationships": {"1": -1, "45": 1.1}, "project_preferences": [6]}, {"id": 1, "name": "Sam", "attributes": {"1": [4, 5, 6]}, "relationships": {"100": 1.1, "45": 1.1, "1": 1.1}, "project_preferences": [4, 6]}]'
-        json_requirements_team_1 = '[{"attribute": 4, "operator": "exactly", "value": 3}, {"attribute": 1, "operator": "less than", "value": 1}]'
+        json_requirements_team_1 = '[{"attribute": 4, "operator": "exactly", "value": 3, "criteria": "someone_meets_requirement", "num_members_required": null}, {"attribute": 1, "operator": "less than", "value": 1, "criteria": "someone_meets_requirement", "num_members_required": null}]'
         json_students_team_2 = '[{"id": 45, "name": "James", "attributes": {}, "relationships": {}, "project_preferences": []}, {"id": 46, "name": "Jessie", "attributes": {}, "relationships": {}, "project_preferences": []}, {"id": 100, "name": "Meowth", "attributes": {}, "relationships": {}, "project_preferences": []}]'
         json_requirements_team_2 = (
-            '[{"attribute": 2, "operator": "more than", "value": 6}]'
+            '[{"attribute": 2, "operator": "more than", "value": 6, "criteria": "someone_meets_requirement", "num_members_required": null}]'
         )
         cls.json_teams = [
             f'{{"id": 1, "name": "Team 1", "project_id": 6, "requirements": {json_requirements_team_1}, "students": {json_students_team_1}}}',

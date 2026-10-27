@@ -9,6 +9,7 @@ from algorithms.dataclasses.enums import (
     AlgorithmType,
     Relationship,
     RequirementOperator,
+    RequirementsCriteria,
 )
 
 
@@ -285,6 +286,10 @@ class GenerateTeamsValidator(Validator):
                                     *[op.value for op in RequirementOperator]
                                 ),
                                 "value": int,
+                                Optional("criteria"): Or(
+                                    *[criteria.value for criteria in RequirementsCriteria]
+                                ),
+                                Optional("num_members_required"): int,
                             }
                         ],
                         Optional("is_locked"): bool,
@@ -301,3 +306,14 @@ class GenerateTeamsValidator(Validator):
 
         if len(initial_teams_ids) != len(set(initial_teams_ids)):
             raise SchemaError("Team ids must be unique.")
+
+        for team in initial_teams:
+            for requirement in team.get("requirements") or []:
+                if (
+                    requirement.get("criteria") == RequirementsCriteria.N_MEMBERS.value
+                    and requirement.get("num_members_required") is None
+                ):
+                    raise SchemaError(
+                        f"Team {team.get('id')} has a requirement with criteria "
+                        f"'{RequirementsCriteria.N_MEMBERS.value}' but no 'num_members_required'."
+                    )
