@@ -221,14 +221,16 @@ class PriorityAlgorithmOptions(WeightAlgorithmOptions):
     def validate_priority(priority_data: Dict):
         if "priority_type" not in priority_data:
             raise SchemaError("Priority type not specified.")
-        priority_type = priority_data.pop("priority_type")
+        priority_type = priority_data["priority_type"]
         Schema(Or(*[pri.value for pri in PriorityType])).validate(priority_type)
 
         priority_cls = get_priority_from_type(PriorityType(priority_type))
         if priority_cls is None:
             raise SchemaError("Priority type not supported.")
 
-        priority_cls.get_schema().validate(priority_data)
+        # priority_type is not part of the per-type schema, so validate the remaining fields only
+        priority_fields = {k: v for k, v in priority_data.items() if k != "priority_type"}
+        priority_cls.get_schema().validate(priority_fields)
         return True
 
 
