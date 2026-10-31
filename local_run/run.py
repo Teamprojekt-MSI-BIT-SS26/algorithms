@@ -6,7 +6,11 @@ runs the algorithm and prints/writes the generated teams.
 
 Usage (from the repository root):
     python -m local_run.run                                   # uses sample_payload.json
+    python -m local_run.run local_run/sample_payload_18.json  # 18 students
     python -m local_run.run path/to/payload.json -o teams.json
+
+Automated test run with both sample payloads and all algorithm types:
+    python -m unittest tests.test_local_run.test_local_run
 """
 import argparse
 import json
