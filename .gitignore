@@ -26,3 +26,5 @@ logs/nginx/
 # runs/ local files
 /runs/*/input.csv
 /runs/*/output.json
+# local virtual environment
+.venv/
