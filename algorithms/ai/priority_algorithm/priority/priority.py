@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-from schema import And, Or, Schema
+from schema import And, Or, Schema, Optional as SchemaOptional
 
 from algorithms.ai.priority_algorithm.priority.interfaces import Priority
 from algorithms.ai.priority_algorithm.priority.utils import (
@@ -13,7 +13,6 @@ from algorithms.ai.weight_algorithm.utility.diversity_utility import _blau_index
 from algorithms.dataclasses.enums import (
     DiversifyType,
     TokenizationConstraintDirection,
-    RequirementsCriteria,
     PriorityType,
     Relationship,
     PreferenceDirection,
@@ -136,6 +135,16 @@ class TokenizationPriority(Priority):
             }
         )
 
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "TokenizationPriority":
+        return TokenizationPriority(
+            attribute_id=json.get("attribute_id"),
+            strategy=DiversifyType(json.get("strategy")),
+            direction=TokenizationConstraintDirection(json.get("direction")),
+            threshold=json.get("threshold"),
+            value=json.get("value"),
+        )
+
 
 @dataclass
 class DiversityPriority(Priority):
@@ -185,12 +194,29 @@ class DiversityPriority(Priority):
     @staticmethod
     def get_schema() -> Schema:
         return Schema(
-            {
-                "attribute_id": int,
-                "strategy": And(
-                    str, Or(*[strategy.value for strategy in DiversifyType])
+            And(
+                {
+                    "attribute_id": int,
+                    "strategy": And(
+                        str, Or(*[strategy.value for strategy in DiversifyType])
+                    ),
+                    SchemaOptional("max_num_choices"): And(int, lambda n: n > 0),
+                },
+                # mirrors validate(), so a missing value is rejected by the API validator
+                Schema(
+                    lambda data: data["strategy"] != DiversifyType.CONCENTRATE.value
+                    or "max_num_choices" in data,
+                    error="max_num_choices must be specified with strategy == concentrate.",
                 ),
-            }
+            )
+        )
+
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "DiversityPriority":
+        return DiversityPriority(
+            attribute_id=json.get("attribute_id"),
+            strategy=DiversifyType(json.get("strategy")),
+            max_num_choices=json.get("max_num_choices"),
         )
 
 
@@ -213,13 +239,12 @@ class RequirementPriority(Priority):
 
     @staticmethod
     def get_schema() -> Schema:
-        return Schema(
-            {
-                "criteria": And(
-                    str, Or(*[criteria.value for criteria in RequirementsCriteria])
-                ),
-            }
-        )
+        # the criteria is set per requirement on the project, not on the priority
+        return Schema({})
+
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "RequirementPriority":
+        return RequirementPriority()
 
 
 @dataclass
@@ -253,6 +278,13 @@ class ProjectPreferencePriority(Priority):
                 ),
                 "max_project_preferences": int,
             }
+        )
+
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "ProjectPreferencePriority":
+        return ProjectPreferencePriority(
+            direction=PreferenceDirection(json.get("direction")),
+            max_project_preferences=json.get("max_project_preferences"),
         )
 
 
@@ -296,6 +328,13 @@ class SocialPreferencePriority(Priority):
                 "max_num_friends": int,
                 "max_num_enemies": int,
             }
+        )
+
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "SocialPreferencePriority":
+        return SocialPreferencePriority(
+            max_num_friends=json.get("max_num_friends"),
+            max_num_enemies=json.get("max_num_enemies"),
         )
 
 

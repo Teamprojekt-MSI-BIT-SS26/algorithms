@@ -18,8 +18,8 @@ class TestProjectRequirementSerializer(unittest.TestCase):
             ),
         ]
         cls.json_project_requirements = [
-            '{"attribute": 4, "operator": "exactly", "value": 5}',
-            '{"attribute": 1, "operator": "less than", "value": 2}',
+            '{"attribute": 4, "operator": "exactly", "value": 5, "criteria": "someone_meets_requirement", "num_members_required": null}',
+            '{"attribute": 1, "operator": "less than", "value": 2, "criteria": "someone_meets_requirement", "num_members_required": null}',
         ]
 
     def test_encode__encodes_project_requirement_correctly_to_json(

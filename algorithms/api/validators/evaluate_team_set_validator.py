@@ -3,7 +3,11 @@ from typing import Dict, Any
 from schema import Schema, Optional, Or, SchemaError
 
 from algorithms.api.validators.interface import Validator
-from algorithms.dataclasses.enums import RequirementOperator, Relationship
+from algorithms.dataclasses.enums import (
+    RequirementOperator,
+    Relationship,
+    RequirementsCriteria,
+)
 from algorithms.utils.relationship import get_relationship_str
 from algorithms.utils.validation import is_unique
 
@@ -48,6 +52,10 @@ class EvaluateTeamSetValidator(Validator):
                             "attribute": int,
                             "operator": Or(*[op.value for op in RequirementOperator]),
                             "value": int,
+                            Optional("criteria"): Or(
+                                *[criteria.value for criteria in RequirementsCriteria]
+                            ),
+                            Optional("num_members_required"): int,
                         }
                     ],
                     Optional("is_locked"): bool,

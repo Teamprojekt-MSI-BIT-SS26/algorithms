@@ -3,12 +3,14 @@ from typing import List, Dict
 from schema import Schema, SchemaError, Or, Optional
 
 from algorithms.ai.algorithm_runner import AlgorithmRunner
+from algorithms.ai.interfaces.team_generation_options import get_team_size_error
 from algorithms.api.validators.interface import Validator
 from algorithms.utils.relationship import get_relationship_str
 from algorithms.dataclasses.enums import (
     AlgorithmType,
     Relationship,
     RequirementOperator,
+    RequirementsCriteria,
 )
 
 
@@ -28,6 +30,7 @@ class GenerateTeamsValidator(Validator):
         self.validate_team_options()
         self.validate_algorithm_options()
         self.validate_students()
+        self.validate_students_fit_teams()
 
     def _validate_schema(self):
         Schema(
@@ -133,7 +136,8 @@ class GenerateTeamsValidator(Validator):
         student_ids = set([student.get("id") for student in students])
 
         for student in students:
-            relationships = student.get("relationships")
+            # relationships are optional in the student schema
+            relationships = student.get("relationships") or {}
 
             # Validate if relationship keys integer string
             try:
@@ -213,7 +217,8 @@ class GenerateTeamsValidator(Validator):
         student_ids = set([student.get("id") for student in students])
 
         for student in students:
-            relationships = student.get("relationships")
+            # relationships are optional in the student schema
+            relationships = student.get("relationships") or {}
 
             # Validate if relationship keys integer string
             try:
@@ -268,6 +273,21 @@ class GenerateTeamsValidator(Validator):
 
         self._validate_student_relationships(students)
 
+    def validate_students_fit_teams(self):
+        team_options = self.data.get("team_generation_options")
+        # locked teams are skipped by the algorithms, so they cannot take any students
+        num_locked_teams = len(
+            [t for t in team_options.get("initial_teams") if t.get("is_locked")]
+        )
+        error = get_team_size_error(
+            num_students=len(self.data.get("students")),
+            num_teams=team_options.get("total_teams") - num_locked_teams,
+            min_team_size=team_options.get("min_team_size"),
+            max_team_size=team_options.get("max_team_size"),
+        )
+        if error:
+            raise SchemaError(error)
+
     def validate_team_options(self):
         team_options = self.data.get("team_generation_options")
 
@@ -285,6 +305,13 @@ class GenerateTeamsValidator(Validator):
                                     *[op.value for op in RequirementOperator]
                                 ),
                                 "value": int,
+                                Optional("criteria"): Or(
+                                    *[
+                                        criteria.value
+                                        for criteria in RequirementsCriteria
+                                    ]
+                                ),
+                                Optional("num_members_required"): int,
                             }
                         ],
                         Optional("is_locked"): bool,
@@ -301,3 +328,14 @@ class GenerateTeamsValidator(Validator):
 
         if len(initial_teams_ids) != len(set(initial_teams_ids)):
             raise SchemaError("Team ids must be unique.")
+
+        for team in initial_teams:
+            for requirement in team.get("requirements") or []:
+                if (
+                    requirement.get("criteria") == RequirementsCriteria.N_MEMBERS.value
+                    and requirement.get("num_members_required") is None
+                ):
+                    raise SchemaError(
+                        f"Team {team.get('id')} has a requirement with criteria "
+                        f"'{RequirementsCriteria.N_MEMBERS.value}' but no 'num_members_required'."
+                    )

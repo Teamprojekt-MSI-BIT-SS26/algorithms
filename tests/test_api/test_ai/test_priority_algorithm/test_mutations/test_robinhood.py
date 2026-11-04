@@ -1,5 +1,5 @@
 import unittest
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 
 from schema import Schema
 
@@ -37,6 +37,10 @@ class StudentListPriority(Priority):
     @staticmethod
     def get_schema() -> Schema:
         return Schema({})
+
+    @staticmethod
+    def parse_json(json: Dict[str, Any]) -> "StudentListPriority":
+        return StudentListPriority(students=json.get("students", []))
 
 
 def equal_priority_team_sets(a: PriorityTeamSet, b: PriorityTeamSet) -> bool:
