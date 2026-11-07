@@ -17,8 +17,8 @@ load_dotenv()
 APP_ENV = os.environ.get("APP_ENV", "dev")
 
 if APP_ENV == "prod":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "api.api.settings.prod")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "algorithms.api.settings.prod")
 else:
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "api.api.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "algorithms.api.settings")
 
 application = get_asgi_application()

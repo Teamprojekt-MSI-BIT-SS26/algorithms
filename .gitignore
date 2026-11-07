@@ -28,3 +28,6 @@ logs/nginx/
 /runs/*/output.json
 # local virtual environment
 .venv/
+
+# Local SQLite database of the API
+db.sqlite3
