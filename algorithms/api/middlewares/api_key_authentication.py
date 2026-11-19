@@ -4,19 +4,18 @@ from utils.api_auth import is_api_key_valid
 
 
 class APIKeyAuthenticationMiddleware:
+    """
+    Rejects every request without a valid X-Api-Key header before it reaches a view.
+    """
+
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        try:
-            response = self.get_response(request)
-            request_headers = dict(request.headers)
-            api_key = request_headers.get("X-Api-Key")
-            if not api_key:
-                return HttpResponse("No API key provided", status=400)
-            if not is_api_key_valid(api_key):
-                return HttpResponse("Invalid API key provided", status=401)
+        api_key = request.headers.get("X-Api-Key")
+        if not api_key:
+            return HttpResponse("No API key provided", status=400)
+        if not is_api_key_valid(api_key):
+            return HttpResponse("Invalid API key provided", status=401)
 
-            return response
-        except Exception as e:
-            print(e)
+        return self.get_response(request)

@@ -14,10 +14,11 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv("../../../env/.env.prod")
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = BASE_DIR.parent.parent
+
+load_dotenv(ROOT_DIR / "env" / ".env.prod")
 
 
 # Quick-start development settings - unsuitable for production
@@ -56,7 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "api.api",
+    "algorithms.api",
     "rest_framework",
     "corsheaders",
 ]
@@ -70,10 +71,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "api.api.middlewares.api_key_authentication.APIKeyAuthenticationMiddleware",
+    "algorithms.api.middlewares.api_key_authentication.APIKeyAuthenticationMiddleware",
 ]
 
-ROOT_URLCONF = "api.api.urls"
+ROOT_URLCONF = "algorithms.api.urls"
 
 TEMPLATES = [
     {
@@ -90,7 +91,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "api.api.wsgi.application"
+WSGI_APPLICATION = "algorithms.api.wsgi.application"
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

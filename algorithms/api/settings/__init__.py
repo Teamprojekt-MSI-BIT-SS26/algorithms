@@ -12,15 +12,24 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = BASE_DIR.parent.parent
+
+# Local configuration, see env/api.env.example. Variables already set in the shell take precedence.
+load_dotenv(ROOT_DIR / "env" / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-b-q$3f0wrv39^f^mj(vo6$%*y!y47ygzp(q)xkkcvj^z(4#-w5"
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-b-q$3f0wrv39^f^mj(vo6$%*y!y47ygzp(q)xkkcvj^z(4#-w5",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -40,7 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "api.api",
+    "algorithms.api",
     "corsheaders",
     "rest_framework",
 ]
@@ -54,10 +63,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "api.api.middlewares.api_key_authentication.APIKeyAuthenticationMiddleware",
+    "algorithms.api.middlewares.api_key_authentication.APIKeyAuthenticationMiddleware",
 ]
 
-ROOT_URLCONF = "api.api.urls"
+ROOT_URLCONF = "algorithms.api.urls"
 
 TEMPLATES = [
     {
@@ -75,21 +84,30 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "api.api.wsgi.application"
+WSGI_APPLICATION = "algorithms.api.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
-        "NAME": os.environ.get("DB_DATABASE", os.environ.get("RDS_DB_NAME")),
-        "USER": os.environ.get("DB_USER", os.environ.get("RDS_USERNAME")),
-        "PASSWORD": os.environ.get("DB_PASSWORD", os.environ.get("RDS_PASSWORD")),
-        "HOST": os.environ.get("DB_HOST", os.environ.get("RDS_HOSTNAME")),
-        "PORT": os.environ.get("DB_PORT", os.environ.get("RDS_PORT")),
+# Without DB_ENGINE, a local SQLite file is used, so no database server is needed for development.
+if os.environ.get("DB_ENGINE"):
+    DATABASES = {
+        "default": {
+            "ENGINE": os.environ.get("DB_ENGINE"),
+            "NAME": os.environ.get("DB_DATABASE", os.environ.get("RDS_DB_NAME")),
+            "USER": os.environ.get("DB_USER", os.environ.get("RDS_USERNAME")),
+            "PASSWORD": os.environ.get("DB_PASSWORD", os.environ.get("RDS_PASSWORD")),
+            "HOST": os.environ.get("DB_HOST", os.environ.get("RDS_HOSTNAME")),
+            "PORT": os.environ.get("DB_PORT", os.environ.get("RDS_PORT")),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ROOT_DIR / "db.sqlite3",
+        }
+    }
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
